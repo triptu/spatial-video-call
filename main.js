@@ -101,21 +101,23 @@ function init() {
       } else if (meshes[peer.peer.id]) {
         mesh = meshes[peer.peer.id];
       }
-      const audioTracks = peer.audioTracks;
-      for (let audioTrack of audioTracks) {
-        console.log("new audio", audioTrack, allAudio);
-        if (audioTrack && !allAudio[audioTrack.trackId]) {
-          try {
-            const audioStream = new MediaStream([audioTrack.nativeTrack]);
-            console.log("adding audio", audioTrack);
-            let audioSource = new THREE.PositionalAudio(listener);
-            audioSource.setMediaStreamSource(audioStream);
-            console.log("adding audio to scene");
-            mesh.add(audioSource);
-            console.log("added audio", audioTrack);
-            allAudio[audioTrack.trackId] = audioSource;
-          } catch (err) {
-            console.error("playing audio ", err);
+      if (mesh) {
+        const audioTracks = peer.audioTracks;
+        for (let audioTrack of audioTracks) {
+          console.log("new audio", audioTrack, allAudio);
+          if (audioTrack && !allAudio[audioTrack.trackId]) {
+            try {
+              const audioStream = new MediaStream([audioTrack.nativeTrack]);
+              console.log("adding audio", audioTrack);
+              let audioSource = new THREE.PositionalAudio(listener);
+              audioSource.setMediaStreamSource(audioStream);
+              console.log("adding audio to scene");
+              mesh.add(audioSource);
+              console.log("added audio", audioTrack);
+              allAudio[audioTrack.trackId] = audioSource;
+            } catch (err) {
+              console.error("playing audio ", err);
+            }
           }
         }
       }

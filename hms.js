@@ -2,7 +2,7 @@ import {
   HMSLogLevel,
   HMSNotificationTypes,
   HMSReactiveStore,
-  selectRemotePeers,
+  selectPeers,
 } from "@100mslive/hms-video-store";
 
 const hms = new HMSReactiveStore();
@@ -21,9 +21,10 @@ export const join = () => {
     authToken: token,
     userName: "threejsuser",
     settings: {
-      isAudioMuted: true,
-      isVideoMuted: true,
+      isAudioMuted: false,
+      isVideoMuted: false,
     },
+    rememberDeviceSelection: true,
   });
 };
 
@@ -55,8 +56,7 @@ const attachPeerVideos = (peers) => {
 };
 
 const makePeers = () => {
-  let peers = hmsStore.getState(selectRemotePeers);
-  peers = peers.filter((p) => p.name !== "threejsuser");
+  let peers = hmsStore.getState(selectPeers);
   const threePeers = [];
   console.log("going to attach peers videos");
   attachPeerVideos(peers);
@@ -64,12 +64,12 @@ const makePeers = () => {
   for (let peer of peers) {
     const threePeer = { peer, video: videoElements[peer.id], audioTracks: [] };
     threePeer.audioTracks = [];
-    if (peer.audioTrack) {
+    if (!peer.isLocal && peer.audioTrack) {
       threePeer.audioTracks = [hmsActions.hmsSDKTracks[peer.audioTrack]];
     }
     for (let trackId of peer.auxiliaryTracks) {
       const sdkTrack = hmsActions.hmsSDKTracks[trackId];
-      if (sdkTrack?.type === "audio") {
+      if (!peer.isLocal && sdkTrack?.type === "audio") {
         threePeer.audioTracks.push(sdkTrack);
       }
     }
@@ -94,7 +94,7 @@ export const onPeers = (callback) => {
     } catch (err) {
       console.log("handling peers", err);
     }
-  }, selectRemotePeers);
+  }, selectPeers);
 };
 
 export const onPeerLeave = (callback) => {
@@ -104,3 +104,6 @@ export const onPeerLeave = (callback) => {
     }
   });
 };
+
+window.addEventListener("beforeunload", () => hmsActions.leave());
+window.addEventListener("onunload", () => hmsActions.leave());
