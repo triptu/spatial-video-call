@@ -47,7 +47,7 @@ const attachPeerVideos = (peers) => {
       hmsStore.subscribe(() => {
         const track = hmsStore.getState(selectTrackByID(peer.videoTrack));
         console.log("track changed", track);
-        if (track.enabled !== track.displayEnabled) {
+        if (!track || track.enabled !== track.displayEnabled) {
           return;
         }
         if (track.enabled) {
