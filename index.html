@@ -7,7 +7,11 @@
     <title>100ms Spatial Audio</title>
   </head>
   <body>
-    <button id="join" style="cursor: pointer">Join</button>
+    <button id="join" class="btn">Join</button>
+    <div id="controls" class="controls" style="display: none">
+      <button id="audioToggle" class="btn">Mute Audio</button>
+      <button id="videoToggle" class="btn">Mute Video</button>
+    </div>
     <canvas id="bg" style="display: none"></canvas>
     <script type="module" src="/main.js"></script>
   </body>

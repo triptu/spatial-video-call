@@ -2,7 +2,10 @@ import {
   HMSLogLevel,
   HMSNotificationTypes,
   HMSReactiveStore,
+  selectIsLocalAudioEnabled,
+  selectIsLocalVideoEnabled,
   selectPeers,
+  selectTrackByID,
 } from "@100mslive/hms-video-store";
 
 const hms = new HMSReactiveStore();
@@ -16,7 +19,7 @@ window.addEventListener("beforeunload", hmsActions.leave);
 
 export const join = () => {
   const token =
-    "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhY2Nlc3Nfa2V5IjoiNjEwY2Q5Y2JmMzBlNzczZjQ3NTc3YjBkIiwicm9vbV9pZCI6IjYxOGU5NGY1YWYzMTg4ZGYzM2U2N2Q0NiIsInVzZXJfaWQiOiI2MTBjZDljYmYzMGU3NzNmNDc1NzdiMDkiLCJyb2xlIjoiaG9zdCIsImp0aSI6ImZkMWIzYjJhLWQwZjMtNDM0My1iMzU1LWVhYmYxNjhlNjYwYiIsInR5cGUiOiJhcHAiLCJ2ZXJzaW9uIjoyLCJleHAiOjE2NDQ5ODU0ODV9.05Sjwnw8j27Siu59NLqOC_tYvrQ1ZzDMHsrSTFfXzLc";
+    "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhY2Nlc3Nfa2V5IjoiNjEwY2Q5Y2JmMzBlNzczZjQ3NTc3YjBkIiwicm9vbV9pZCI6IjYyMGM3ZGFiNmYyYjg3NmQ1OGVmNDE0ZCIsInVzZXJfaWQiOiI2MTBjZDljYmYzMGU3NzNmNDc1NzdiMDkiLCJyb2xlIjoiMzYwcCIsImp0aSI6ImJjMmE2MzE1LTQ1ZmItNGY2OC1hYjQxLTVmNjU3OWEwNjM3MCIsInR5cGUiOiJhcHAiLCJ2ZXJzaW9uIjoyLCJleHAiOjE2NDUwNzIxNzZ9.m5l7uPMCdwEcuyu552dVbf4nQF_GZUYWjRhflBuk_FY";
   hmsActions.join({
     authToken: token,
     userName: "threejsuser",
@@ -33,17 +36,33 @@ const attachPeerVideos = (peers) => {
   // console.log("attaching peer videos for - ", peers);
   for (let peer of peers) {
     // console.log("attaching peer video - ", peer);
-    if (videoElements[peer.id] && peer.videoTrack) {
-      hmsActions.attachVideo(peer.videoTrack, videoElements[peer.id]);
-      console.log("attached peer video, updated older - ", peer);
-    } else if (peer.videoTrack) {
+    if (!videoElements[peer.id] && peer.videoTrack) {
       const video = document.createElement("video");
       video.muted = true;
       video.autoplay = true;
-      hmsActions.attachVideo(peer.videoTrack, video);
+      hmsActions.attachVideo(peer.videoTrack, video).catch(console.error);
       video.play();
       videoElements[peer.id] = video;
       console.log("attached peer video, created new - ", peer);
+      hmsStore.subscribe(() => {
+        const track = hmsStore.getState(selectTrackByID(peer.videoTrack));
+        console.log("track changed", track);
+        if (track.enabled !== track.displayEnabled) {
+          return;
+        }
+        if (track.enabled) {
+          console.log("attaching");
+          hmsActions
+            .attachVideo(track.id, videoElements[peer.id])
+            .then(() => videoElements[peer.id].play())
+            .catch(console.error);
+        } else {
+          console.log("detaching video");
+          hmsActions
+            .detachVideo(track.id, videoElements[peer.id])
+            .catch(console.error);
+        }
+      }, selectTrackByID(peer.videoTrack));
     }
   }
   for (let peerId of Object.keys(videoElements)) {
@@ -75,7 +94,9 @@ const makePeers = () => {
     }
     for (let audioTrack of threePeer.audioTracks) {
       try {
-        audioTrack.setVolume(0);
+        if (audioTrack?.audioElement) {
+          audioTrack.audioElement.volume = 0;
+        }
       } catch (err) {
         console.error("setting volume - ", err);
       }
@@ -103,6 +124,28 @@ export const onPeerLeave = (callback) => {
       callback(msg.data);
     }
   });
+};
+
+export const toggleAudio = async () => {
+  let state = hmsStore.getState(selectIsLocalAudioEnabled);
+  await hmsActions
+    .setLocalAudioEnabled(!state)
+    .then(() => {
+      state = !state;
+    })
+    .catch(console.error);
+  return state;
+};
+
+export const toggleVideo = async () => {
+  let state = hmsStore.getState(selectIsLocalVideoEnabled);
+  await hmsActions
+    .setLocalVideoEnabled(!state)
+    .then(() => {
+      state = !state;
+    })
+    .catch(console.error);
+  return state;
 };
 
 window.addEventListener("beforeunload", () => hmsActions.leave());

@@ -1,7 +1,8 @@
 import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { join, onPeers, onPeerLeave } from "./hms";
+import { join, onPeers, onPeerLeave, toggleAudio, toggleVideo } from "./hms";
+import { FirstPersonControls } from "three/examples/jsm/controls/FirstPersonControls";
 
 // Setup
 
@@ -41,7 +42,6 @@ function init() {
   // scene.add(lightHelper, gridHelper)
 
   const controls = new OrbitControls(camera, renderer.domElement);
-
   function addStar() {
     const geometry = new THREE.SphereGeometry(0.25, 24, 24);
     const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
@@ -93,9 +93,10 @@ function init() {
           })
         );
         scene.add(mesh);
-        mesh.position.z = getRandomInt(-20, 20);
-        mesh.position.x = getRandomInt(-20, 20);
-        mesh.position.y = getRandomInt(0, 20);
+        const dist = -30;
+        mesh.position.z = getRandomInt(-dist, dist);
+        mesh.position.x = getRandomInt(-dist, dist);
+        mesh.position.y = getRandomInt(-dist, dist);
         meshes[peer.peer.id] = mesh;
         console.log("added mesh for peer ", peer, mesh);
       } else if (meshes[peer.peer.id]) {
@@ -111,6 +112,7 @@ function init() {
               console.log("adding audio", audioTrack);
               let audioSource = new THREE.PositionalAudio(listener);
               audioSource.setMediaStreamSource(audioStream);
+              audioSource.setVolume(5);
               console.log("adding audio to scene");
               mesh.add(audioSource);
               console.log("added audio", audioTrack);
@@ -157,8 +159,23 @@ function init() {
 
 const btn = document.getElementById("join");
 const canvas = document.getElementById("bg");
+const toggleAudioBtn = document.getElementById("audioToggle");
+const toggleVideoBtn = document.getElementById("videoToggle");
+const controlsDiv = document.getElementById("controls");
 btn.onclick = () => {
   init();
   btn.style.display = "none";
+  controlsDiv.style.display = null;
   canvas.style.display = null;
+};
+
+toggleAudioBtn.onclick = () => {
+  toggleAudio().then((state) => {
+    toggleAudioBtn.innerText = state ? "Mute Audio" : "Unmute Audio";
+  });
+};
+toggleVideoBtn.onclick = () => {
+  toggleVideo().then((state) => {
+    toggleVideoBtn.innerText = state ? "Mute Video" : "Unmute Video";
+  });
 };
