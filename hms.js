@@ -19,7 +19,7 @@ window.addEventListener("beforeunload", hmsActions.leave);
 
 export const join = () => {
   const token =
-    "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhY2Nlc3Nfa2V5IjoiNjEwY2Q5Y2JmMzBlNzczZjQ3NTc3YjBkIiwicm9vbV9pZCI6IjYyMGM3ZGFiNmYyYjg3NmQ1OGVmNDE0ZCIsInVzZXJfaWQiOiI2MTBjZDljYmYzMGU3NzNmNDc1NzdiMDkiLCJyb2xlIjoiMzYwcCIsImp0aSI6ImY5MjIwODAzLTE0ZGItNGE2MS1iNDk1LTMyYTE2NjcyMDlmYiIsInR5cGUiOiJhcHAiLCJ2ZXJzaW9uIjoyLCJleHAiOjE2NTEwODQ1MjR9.h21IiZBuNylCNjFxxCOj40lysiE4ub4v-ANuRkK7d7E";
+    "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhY2Nlc3Nfa2V5IjoiNjEwY2Q5Y2JmMzBlNzczZjQ3NTc3YjBkIiwicm9vbV9pZCI6IjYyMGM3ZGFiNmYyYjg3NmQ1OGVmNDE0ZCIsInVzZXJfaWQiOiJ4aXF6cmNydyIsInJvbGUiOiIzNjBwIiwianRpIjoiYzBjNWY2YTItN2M1Ny00NGFiLThkMDEtOTdmMzZhZjIwYjQyIiwidHlwZSI6ImFwcCIsInZlcnNpb24iOjIsImV4cCI6MTY2NDk5NjQ5Mn0.09aEJFHGPj1MxNNJhhIviPznXWGjKPWugtw0hZZ-C0k";
   hmsActions.join({
     authToken: token,
     userName: "threejsuser",
